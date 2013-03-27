@@ -94,6 +94,21 @@ public class Master {
 		System.out.println("Master:in overwriteOwner:"+variable+"---"+clientPort);
 		owners.put(variable, clientPort);
 	}
+	
+	public synchronized void forwardRead(String variable,String clientPort) throws ReadException, NumberFormatException, UnknownHostException, IOException{
+		String curOwner=owners.get(variable);
+		if(curOwner!=null){
+			Socket socket=new Socket("127.0.0.1",Integer.parseInt(curOwner));
+			String request = "READ:" + variable+"/"+clientPort;
+			PrintWriter os = new PrintWriter(socket.getOutputStream());
+			System.out.println("Master forward:"+request+"  "+curOwner);
+			os.println(request);
+			os.flush();
+			socket.close();
+			return;
+		}
+		throw new ReadException();
+	}
 
 	public static void main(String[] args) {
 		Master master = new Master(5000);

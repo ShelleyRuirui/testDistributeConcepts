@@ -35,8 +35,28 @@ public class ClientWork implements Runnable {
 					os.println(handlerResponse);
 					os.flush();
 					socket.close();
+					break;
+				case "READ":
+					String[] vars=variable.split("/");
+					String var=vars[0];
+					String clientPortId=vars[1];
+					String value=client.getLocalValue(var);
+					String forwardStr="READRESULT:"+var+"/"+value;
+					Client.log("Client receive READ:"+forwardStr+"  "+clientPortId);
+					Socket s=new Socket("127.0.0.1",Integer.parseInt(clientPortId));
+					PrintWriter os2=new PrintWriter(s.getOutputStream());
+					os2.println(forwardStr);
+					os2.flush();
+					s.close();
+					break;
+				case "READRESULT":
+					String var2=variable.split("/")[0];
+					String value2=variable.split("/")[1];
+					Client.log("Client receive READRESULT:"+var2+" "+value2);
+					client.notifyReadVar(var2,value2);
+					break;
 			}
-		} catch (IOException e) {
+		} catch (IOException | ReadException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
